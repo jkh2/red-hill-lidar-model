@@ -1,0 +1,4 @@
+*.stl binary
+*.obj -text
+*.mtl -text
+*.html linguist-vendored=false

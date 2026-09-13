@@ -1,0 +1,45 @@
+MIT License
+
+Copyright (c) 2026 James Keith Harwood II
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+NOTE ON DATA LICENSING
+
+The MIT license above covers the SOURCE CODE in this repository
+(build_red_hill_model.py, stage1_grids.py, index.html and the viewer).
+
+The DATA products are licensed separately:
+
+  Elevation, terrain, structures and stockpile geometry are derived from
+  USGS 3DEP LiDAR (project CO_SanLuisJuanMiguel_2020_D20), which is in the
+  PUBLIC DOMAIN as a work of the United States Government.
+
+  Road, rail and drainage alignments are derived from OpenStreetMap,
+  (c) OpenStreetMap contributors, licensed under the Open Database License
+  (ODbL) v1.0: https://opendatacommons.org/licenses/odbl/
+
+  ODbL requires attribution and share-alike for derived databases. If you
+  redistribute or build on the OSM-derived linework, you must credit
+  OpenStreetMap contributors and license the derived database under ODbL.
+
+No Google Maps imagery, Street View, or Photorealistic 3D Tiles data was used
+in producing this model.

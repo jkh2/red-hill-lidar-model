@@ -1,0 +1,15 @@
+# LiDAR source tiles - re-downloadable from USGS, far too big for git
+*.laz
+*.las
+*.tif
+*.npy
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,3 +1,5 @@
+![Red Hill Lava Products site model, terrain from USGS 3DEP LiDAR](image1.png)
+
 # Red Hill Lava Products — 3D site model
 
 **4000 US Highway 285, Antonito, Colorado 81120**

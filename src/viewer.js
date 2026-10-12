@@ -6,6 +6,7 @@ __SURVEY_HELPERS__
 const D = JSON.parse(document.getElementById('payload').textContent);
 const M = D.meta, NX = M.nx, NY = M.ny, S = M.step;
 const M2FT = 3.28084;
+function isCompact(){return matchMedia('(max-width:760px), (max-height:520px) and (max-width:1000px)').matches;}
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x100D0C);
@@ -15,7 +16,7 @@ let cam = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 2, 6000);
 cam.up.set(0,0,1);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth<=760 ? 1.5 : 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, isCompact() ? 1.5 : 2));
 document.getElementById('stage').appendChild(renderer.domElement);
 
 const ctr = new THREE.Vector3((M.xmin+M.xmax)/2, (M.ymin+M.ymax)/2, 20);
@@ -65,7 +66,7 @@ for(let r=0;r<NY-1;r++) for(let c=0;c<NX-1;c++){
 }
 const gg = new THREE.BufferGeometry();
 gg.setAttribute('position', new THREE.BufferAttribute(pos,3));
-gg.setAttribute('color', new THREE.BufferAttribute(col,3));
+gg.setAttribute('color', new THREE.BufferAttribute(col.slice(),3));
 gg.setIndex(idx); gg.computeVertexNormals();
 const ground = new THREE.Mesh(gg, new THREE.MeshStandardMaterial(
   {vertexColors:true, roughness:0.95, metalness:0.0, flatShading:false}));
@@ -172,7 +173,7 @@ bind('L-roads', v=>LAYER.roads.g.visible=v);
 bind('L-drainage', v=>LAYER.drainage.g.visible=v);
 bind('L-grid', v=>grid.visible=v);
 bind('L-piles', v=>{
-  gg.setAttribute('color', new THREE.BufferAttribute(v?col:colPlain,3));
+  gg.attributes.color.array.set(v?col:colPlain);
   gg.attributes.color.needsUpdate=true; outlines.visible=v;
 });
 

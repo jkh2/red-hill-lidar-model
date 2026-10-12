@@ -53,7 +53,7 @@ body{font-size:15px;line-height:1.45}
 #inspector{position:fixed;top:14px;right:14px;width:294px;max-height:calc(100dvh - 140px);
   overflow:auto;overscroll-behavior:contain}
 #inspector>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;
-  font-size:15px;font-weight:600;gap:16px}
+  font-size:15px;font-weight:600;gap:16px;position:sticky;top:0;background:var(--panel);z-index:1}
 #inspector>summary::after{content:'−';color:var(--survey);font-size:20px}
 #inspector:not([open])>summary::after{content:'+'}
 #rail{position:static;width:auto;max-height:none;overflow:visible;padding:10px 0 0;border:0;background:none;
@@ -91,7 +91,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
 #measure-prompt{bottom:86px;left:50%;transform:translateX(-50%);z-index:3;font-size:13px;max-width:calc(100vw - 32px)}
 #scale{bottom:100px;right:20px;display:grid;gap:4px;font-size:12px;padding:10px;pointer-events:none}
 #scale-line{display:block;height:8px;width:100px;border:solid var(--ink);border-width:0 1px 2px}
-.facts{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13px}
+.facts{display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,1.45fr);gap:6px 12px;font-size:13px}
 .facts dd{font-variant-numeric:tabular-nums;color:var(--cinder);text-align:right}
 #readout{font-size:12px;line-height:1.65;min-width:260px;bottom:16px}
 #readout .small-note{max-width:270px}
@@ -113,7 +113,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
 @media(max-width:1000px) and (min-width:761px){
   #ident{max-width:285px}#inspector{width:260px}#readout{bottom:88px}
 }
-@media(max-width:760px){
+@media(max-width:760px), (max-height:520px) and (max-width:1000px){
   #ident{top:max(8px,env(safe-area-inset-top));left:8px;right:8px;max-width:none;padding:12px}
   #ident h1{font-size:21px}#ident .sub{font-size:12px}.badges{margin-top:8px}
   .source-details{margin-top:6px}.source-details[open]{max-height:28dvh;overflow:auto}
@@ -124,14 +124,22 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
   #toolbar{bottom:calc(78px + env(safe-area-inset-bottom));left:8px;transform:none;padding:6px;gap:4px}
   #toolbar button{font-size:12px;padding:7px;min-height:44px}
   body:has(#inspector[open]) #toolbar{bottom:calc(46dvh + 18px + env(safe-area-inset-bottom))}
-  #north{bottom:calc(84px + env(safe-area-inset-bottom));right:8px;background:rgba(25,20,18,.96)}
-  body:has(#inspector[open]) #north{bottom:calc(46dvh + 24px + env(safe-area-inset-bottom))}
+  #north{bottom:calc(234px + env(safe-area-inset-bottom));right:8px;background:rgba(25,20,18,.96)}
+  body:has(#inspector[open]) #north{bottom:calc(46dvh + 176px + env(safe-area-inset-bottom))}
   #readout{display:none}
   #help{bottom:144px}body:has(#inspector[open]) #help{bottom:calc(46dvh + 80px)}
   #scale{bottom:152px;right:8px;background:rgba(25,20,18,.96);max-width:160px}
   body:has(#inspector[open]) #scale{bottom:calc(46dvh + 90px)}
-  #measure-prompt{bottom:144px;left:8px;transform:none;padding:10px;max-width:calc(100vw - 16px)}
+  #measure-prompt{bottom:144px;left:8px;transform:none;padding:10px;max-width:calc(100vw - 176px)}
   body:has(#inspector[open]) #measure-prompt{bottom:calc(46dvh + 80px)}
+}
+@media(max-height:520px) and (max-width:1000px){
+  #ident{right:auto;width:calc(100vw - 88px);max-width:420px;padding:8px 12px}
+  #ident .sub,#ident .source-details{display:none}
+  .badges{margin-top:4px}
+  #north,body:has(#inspector[open]) #north{top:8px;bottom:auto}
+  #scale,body:has(#inspector[open]) #scale{top:84px;bottom:auto}
+  #measure-prompt,body:has(#inspector[open]) #measure-prompt{top:104px;bottom:auto;max-width:300px}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
@@ -305,6 +313,7 @@ function niceScaleBar(pixelsPerMetre, targetPixels=100) {
 const D = JSON.parse(document.getElementById('payload').textContent);
 const M = D.meta, NX = M.nx, NY = M.ny, S = M.step;
 const M2FT = 3.28084;
+function isCompact(){return matchMedia('(max-width:760px), (max-height:520px) and (max-width:1000px)').matches;}
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x100D0C);
@@ -314,7 +323,7 @@ let cam = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 2, 6000);
 cam.up.set(0,0,1);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth<=760 ? 1.5 : 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, isCompact() ? 1.5 : 2));
 document.getElementById('stage').appendChild(renderer.domElement);
 
 const ctr = new THREE.Vector3((M.xmin+M.xmax)/2, (M.ymin+M.ymax)/2, 20);
@@ -364,7 +373,7 @@ for(let r=0;r<NY-1;r++) for(let c=0;c<NX-1;c++){
 }
 const gg = new THREE.BufferGeometry();
 gg.setAttribute('position', new THREE.BufferAttribute(pos,3));
-gg.setAttribute('color', new THREE.BufferAttribute(col,3));
+gg.setAttribute('color', new THREE.BufferAttribute(col.slice(),3));
 gg.setIndex(idx); gg.computeVertexNormals();
 const ground = new THREE.Mesh(gg, new THREE.MeshStandardMaterial(
   {vertexColors:true, roughness:0.95, metalness:0.0, flatShading:false}));
@@ -471,7 +480,7 @@ bind('L-roads', v=>LAYER.roads.g.visible=v);
 bind('L-drainage', v=>LAYER.drainage.g.visible=v);
 bind('L-grid', v=>grid.visible=v);
 bind('L-piles', v=>{
-  gg.setAttribute('color', new THREE.BufferAttribute(v?col:colPlain,3));
+  gg.attributes.color.array.set(v?col:colPlain);
   gg.attributes.color.needsUpdate=true; outlines.visible=v;
 });
 
@@ -555,7 +564,7 @@ function focusPile(p) {
   controls.update();invalidate();
   inspector.open = true;
   // Move the inspector scroll, not browser focus, so keyboard list navigation stays usable.
-  inspector.scrollTop = Math.max(0,selection.offsetTop-inspector.offsetTop-52);
+  inspector.scrollTop = Math.max(0,selection.offsetTop-inspector.querySelector('summary').offsetHeight-12);
   announce.textContent = `Stockpile ${p.id} selected. Estimated ${fmt(p.volume_yd3)} cubic yards in 2020.`;
 }
 document.getElementById('clear-selection').addEventListener('click',clearSelection);
@@ -604,7 +613,7 @@ function addMeasurementPoint(point) {
     ['Start NAVD88',`${(a.z+M.origin_z).toFixed(1)} m`],['End NAVD88',`${(b.z+M.origin_z).toFixed(1)} m`]]
     .forEach(([name,value])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=name;dd.textContent=value;facts.append(dt,dd);});
   measurePrompt.textContent='Measurement complete. Tap to start another, or turn Measure off.';
-  inspector.open=true;inspector.scrollTop=Math.max(0,measurement.offsetTop-inspector.offsetTop-52);
+  inspector.open=true;inspector.scrollTop=Math.max(0,measurement.offsetTop-inspector.querySelector('summary').offsetHeight-12);
   announce.textContent=`Ground measurement complete: ${distance.horizontal.toFixed(1)} metres horizontal, ${distance.dz.toFixed(1)} metres height change.`;
   invalidate();
 }
@@ -683,7 +692,7 @@ function fitOverview(top=false) {
   const box=new THREE.Box3().setFromObject(ground);box.expandByObject(structs);
   const center=box.getCenter(new THREE.Vector3()), radius=box.getSize(new THREE.Vector3()).length()/2;
   if(top) {
-    const size=box.getSize(new THREE.Vector3()),usableFraction=innerWidth>760?Math.max(.35,(innerWidth-660)/innerWidth):.9;
+    const size=box.getSize(new THREE.Vector3()),usableFraction=!isCompact()?Math.max(.35,(innerWidth-660)/innerWidth):.9;
     const span=Math.max(size.y*1.3,size.x/(innerWidth/innerHeight*usableFraction)*1.15);
     const next=new THREE.OrthographicCamera(-span*innerWidth/innerHeight/2,span*innerWidth/innerHeight/2,span/2,-span/2,2,6000);
     next.up.set(0,1,0);next.position.copy(center).add(new THREE.Vector3(0,0,2000));next.lookAt(center);
@@ -692,7 +701,7 @@ function fitOverview(top=false) {
     const next=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,2,6000);next.up.set(0,0,1);
     replaceCamera(next);
   const verticalFov=THREE.MathUtils.degToRad(cam.fov);
-  const usableWidth=innerWidth>760?Math.max(innerWidth*.35,innerWidth-660):innerWidth*.9;
+  const usableWidth=!isCompact()?Math.max(innerWidth*.35,innerWidth-660):innerWidth*.9;
   const horizontalFov=2*Math.atan(Math.tan(verticalFov/2)*usableWidth/innerHeight);
   const distance=radius/Math.sin(Math.min(verticalFov,horizontalFov)/2)*1.08;
   controls.maxDistance=Math.max(3200,distance*1.5);cam.far=Math.max(6000,distance*3);cam.updateProjectionMatrix();
@@ -723,7 +732,7 @@ canvas.addEventListener('keydown',ev => {
   else if(ev.key==='t' || ev.key==='T')fitOverview(true);
   else if(ev.key==='Escape'){if(measuring)setMeasuring(false);else clearSelection();}
 });
-if(matchMedia('(max-width:760px)').matches) inspector.open=false;
+if(isCompact()) inspector.open=false;
 
 const northArrow=document.getElementById('north-arrow'),northDirection=new THREE.Vector3();
 function renderFrame() {
@@ -750,7 +759,7 @@ addEventListener('resize',()=>{
   if(cam.isOrthographicCamera){const span=cam.top-cam.bottom;cam.left=-span*innerWidth/innerHeight/2;cam.right=-cam.left;}
   else cam.aspect=innerWidth/innerHeight;
   cam.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<=760?1.5:2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio,isCompact()?1.5:2));
   renderer.setSize(innerWidth,innerHeight);stopHover();invalidate();
 });
 document.addEventListener('visibilitychange',()=>{

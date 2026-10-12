@@ -46,9 +46,12 @@ test('renders terrain, preserves selection, and stops rendering at idle',async({
   await page.mouse.move(canvas.width*.45,canvas.height*.55);await page.mouse.down();
   await page.mouse.move(canvas.width*.55,canvas.height*.6,{steps:6});await page.mouse.up();
   await expect(page.locator('#selection-title')).toHaveText('Stockpile 01');
-  await page.waitForTimeout(1000);
-  const frames=await page.evaluate(()=>window.__testFrames);await page.waitForTimeout(300);
-  expect(await page.evaluate(()=>window.__testFrames)).toBe(frames);
+  // Damping must settle by frame count, not a one-second wall-clock assumption
+  // on a software GPU. Once settled, a quiet interval must schedule zero frames.
+  await expect.poll(async()=>{
+    const frames=await page.evaluate(()=>window.__testFrames);await page.waitForTimeout(500);
+    return await page.evaluate(()=>window.__testFrames)-frames;
+  },{timeout:15000,intervals:[100,250,500]}).toBe(0);
   expect(errors).toEqual([]);
 });
 
@@ -108,8 +111,16 @@ test('mobile starts with useful model space and reachable touch controls',async(
   await page.getByRole('button',{name:'Plan',exact:true}).tap();await expect(page.locator('#scale')).toBeVisible();
   await page.locator('#inspector>summary').tap();await expect(page.locator('#inspector')).toHaveAttribute('open','');
   await page.getByRole('button',{name:/Stockpile 1, estimated/}).tap();
-  await expect(page.locator('#selection')).toBeVisible();await screenshot(page,testInfo,'mobile-stockpile');
+  await expect(page.locator('#selection')).toBeInViewport({ratio:.9});await screenshot(page,testInfo,'mobile-stockpile');
   await context.close();
+});
+
+test('short landscape keeps navigation and inspector reachable',async({page},testInfo)=>{
+  await page.setViewportSize({width:844,height:390});await open(page);
+  await expect(page.locator('#inspector')).not.toHaveAttribute('open');
+  await page.getByRole('button',{name:'Plan',exact:true}).click();await expect(page.locator('#scale')).toBeInViewport();
+  await screenshot(page,testInfo,'short-landscape');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(844);
 });
 
 test('dependency failure provides recovery and readable survey data',async({page},testInfo)=>{

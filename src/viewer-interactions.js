@@ -78,7 +78,7 @@ function focusPile(p) {
   controls.update();invalidate();
   inspector.open = true;
   // Move the inspector scroll, not browser focus, so keyboard list navigation stays usable.
-  inspector.scrollTop = Math.max(0,selection.offsetTop-inspector.offsetTop-52);
+  inspector.scrollTop = Math.max(0,selection.offsetTop-inspector.querySelector('summary').offsetHeight-12);
   announce.textContent = `Stockpile ${p.id} selected. Estimated ${fmt(p.volume_yd3)} cubic yards in 2020.`;
 }
 document.getElementById('clear-selection').addEventListener('click',clearSelection);
@@ -127,7 +127,7 @@ function addMeasurementPoint(point) {
     ['Start NAVD88',`${(a.z+M.origin_z).toFixed(1)} m`],['End NAVD88',`${(b.z+M.origin_z).toFixed(1)} m`]]
     .forEach(([name,value])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=name;dd.textContent=value;facts.append(dt,dd);});
   measurePrompt.textContent='Measurement complete. Tap to start another, or turn Measure off.';
-  inspector.open=true;inspector.scrollTop=Math.max(0,measurement.offsetTop-inspector.offsetTop-52);
+  inspector.open=true;inspector.scrollTop=Math.max(0,measurement.offsetTop-inspector.querySelector('summary').offsetHeight-12);
   announce.textContent=`Ground measurement complete: ${distance.horizontal.toFixed(1)} metres horizontal, ${distance.dz.toFixed(1)} metres height change.`;
   invalidate();
 }
@@ -206,7 +206,7 @@ function fitOverview(top=false) {
   const box=new THREE.Box3().setFromObject(ground);box.expandByObject(structs);
   const center=box.getCenter(new THREE.Vector3()), radius=box.getSize(new THREE.Vector3()).length()/2;
   if(top) {
-    const size=box.getSize(new THREE.Vector3()),usableFraction=innerWidth>760?Math.max(.35,(innerWidth-660)/innerWidth):.9;
+    const size=box.getSize(new THREE.Vector3()),usableFraction=!isCompact()?Math.max(.35,(innerWidth-660)/innerWidth):.9;
     const span=Math.max(size.y*1.3,size.x/(innerWidth/innerHeight*usableFraction)*1.15);
     const next=new THREE.OrthographicCamera(-span*innerWidth/innerHeight/2,span*innerWidth/innerHeight/2,span/2,-span/2,2,6000);
     next.up.set(0,1,0);next.position.copy(center).add(new THREE.Vector3(0,0,2000));next.lookAt(center);
@@ -215,7 +215,7 @@ function fitOverview(top=false) {
     const next=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,2,6000);next.up.set(0,0,1);
     replaceCamera(next);
   const verticalFov=THREE.MathUtils.degToRad(cam.fov);
-  const usableWidth=innerWidth>760?Math.max(innerWidth*.35,innerWidth-660):innerWidth*.9;
+  const usableWidth=!isCompact()?Math.max(innerWidth*.35,innerWidth-660):innerWidth*.9;
   const horizontalFov=2*Math.atan(Math.tan(verticalFov/2)*usableWidth/innerHeight);
   const distance=radius/Math.sin(Math.min(verticalFov,horizontalFov)/2)*1.08;
   controls.maxDistance=Math.max(3200,distance*1.5);cam.far=Math.max(6000,distance*3);cam.updateProjectionMatrix();
@@ -246,7 +246,7 @@ canvas.addEventListener('keydown',ev => {
   else if(ev.key==='t' || ev.key==='T')fitOverview(true);
   else if(ev.key==='Escape'){if(measuring)setMeasuring(false);else clearSelection();}
 });
-if(matchMedia('(max-width:760px)').matches) inspector.open=false;
+if(isCompact()) inspector.open=false;
 
 const northArrow=document.getElementById('north-arrow'),northDirection=new THREE.Vector3();
 function renderFrame() {
@@ -273,7 +273,7 @@ addEventListener('resize',()=>{
   if(cam.isOrthographicCamera){const span=cam.top-cam.bottom;cam.left=-span*innerWidth/innerHeight/2;cam.right=-cam.left;}
   else cam.aspect=innerWidth/innerHeight;
   cam.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<=760?1.5:2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio,isCompact()?1.5:2));
   renderer.setSize(innerWidth,innerHeight);stopHover();invalidate();
 });
 document.addEventListener('visibilitychange',()=>{

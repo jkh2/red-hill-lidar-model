@@ -200,7 +200,8 @@ function replaceCamera(nextCamera) {
   controls.maxPolarAngle=cam.isOrthographicCamera?Math.PI:Math.PI/2-.04;
   controls.enableRotate=!cam.isOrthographicCamera;
   if(cam.isOrthographicCamera){controls.mouseButtons.LEFT=THREE.MOUSE.PAN;controls.touches.ONE=THREE.TOUCH.PAN;}
-  controls.listenToKeyEvents(canvas);controls.addEventListener('change',invalidate);controls.addEventListener('start',stopHover);
+  controls.listenToKeyEvents(canvas);controls.addEventListener('change',invalidate);
+  controls.addEventListener('start',()=>{stopHover();lastFrameTime=0;});
 }
 function fitOverview(top=false) {
   const box=new THREE.Box3().setFromObject(ground);box.expandByObject(structs);
@@ -249,8 +250,10 @@ canvas.addEventListener('keydown',ev => {
 if(isCompact()) inspector.open=false;
 
 const northArrow=document.getElementById('north-arrow'),northDirection=new THREE.Vector3();
-function renderFrame() {
+function renderFrame(timestamp) {
   renderRequest=0;if(contextLost || document.hidden)return;
+  controls.dampingFactor=dampingAlpha(lastFrameTime?(timestamp-lastFrameTime)/1000:1/60);
+  lastFrameTime=timestamp;
   const changed=controls.update();
   renderer.render(scene,cam);
   northDirection.set(0,1,0).applyQuaternion(cam.quaternion.clone().invert());

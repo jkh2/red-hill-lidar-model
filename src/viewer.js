@@ -25,7 +25,7 @@ controls.target.copy(ctr);
 controls.enableDamping = true; controls.dampingFactor = 0.07;
 controls.maxPolarAngle = Math.PI/2 - 0.04;
 controls.minDistance = 60; controls.maxDistance = 3200;
-let renderRequest = 0, contextLost = false;
+let renderRequest = 0, contextLost = false, lastFrameTime = 0;
 function invalidate() {
   if (!renderRequest && !document.hidden && !contextLost) renderRequest = requestAnimationFrame(renderFrame);
 }

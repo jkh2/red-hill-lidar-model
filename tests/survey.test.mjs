@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {pointInRing,associatePileOutlines,physicalPoint,surveyDistance,niceScaleBar} from '../src/survey-utils.mjs';
+import {pointInRing,associatePileOutlines,physicalPoint,surveyDistance,niceScaleBar,dampingAlpha} from '../src/survey-utils.mjs';
 const D=JSON.parse(fs.readFileSync(new URL('../data/viewer_payload.json',import.meta.url)));
 test('each current pile has one outline despite the generator sorting order',()=>{
   const linked=associatePileOutlines(D.piles,D.pile_outlines);
@@ -28,4 +28,10 @@ test('plan scale bar uses real metres and pixel density',()=>{
     assert.equal(bar.pixels,bar.metres*ppm);
   }
   assert.equal(niceScaleBar(0),null);
+});
+test('orbit damping follows elapsed time across refresh rates',()=>{
+  assert.ok(Math.abs(dampingAlpha(1/60)-.07)<1e-12);
+  const twoFrames=1-(1-dampingAlpha(1/60))**2;
+  assert.ok(Math.abs(dampingAlpha(1/30)-twoFrames)<1e-12);
+  assert.ok(dampingAlpha(.25)>.6 && dampingAlpha(.25)<1);
 });

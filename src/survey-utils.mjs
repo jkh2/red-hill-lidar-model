@@ -41,3 +41,9 @@ export function niceScaleBar(pixelsPerMetre, targetPixels=100) {
   const metres=(raw>=5*power?5:raw>=2*power?2:1)*power;
   return {metres,pixels:metres*pixelsPerMetre};
 }
+
+export function dampingAlpha(seconds) {
+  // Preserve the original 0.07 decay at 60 Hz without a long low-FPS tail.
+  const dt=Math.max(1/240,Math.min(.25,Number.isFinite(seconds)?seconds:1/60));
+  return 1-Math.pow(.93,dt*60);
+}

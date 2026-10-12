@@ -309,6 +309,12 @@ function niceScaleBar(pixelsPerMetre, targetPixels=100) {
   return {metres,pixels:metres*pixelsPerMetre};
 }
 
+function dampingAlpha(seconds) {
+  // Preserve the original 0.07 decay at 60 Hz without a long low-FPS tail.
+  const dt=Math.max(1/240,Math.min(.25,Number.isFinite(seconds)?seconds:1/60));
+  return 1-Math.pow(.93,dt*60);
+}
+
 
 const D = JSON.parse(document.getElementById('payload').textContent);
 const M = D.meta, NX = M.nx, NY = M.ny, S = M.step;
@@ -332,7 +338,7 @@ controls.target.copy(ctr);
 controls.enableDamping = true; controls.dampingFactor = 0.07;
 controls.maxPolarAngle = Math.PI/2 - 0.04;
 controls.minDistance = 60; controls.maxDistance = 3200;
-let renderRequest = 0, contextLost = false;
+let renderRequest = 0, contextLost = false, lastFrameTime = 0;
 function invalidate() {
   if (!renderRequest && !document.hidden && !contextLost) renderRequest = requestAnimationFrame(renderFrame);
 }
@@ -686,7 +692,8 @@ function replaceCamera(nextCamera) {
   controls.maxPolarAngle=cam.isOrthographicCamera?Math.PI:Math.PI/2-.04;
   controls.enableRotate=!cam.isOrthographicCamera;
   if(cam.isOrthographicCamera){controls.mouseButtons.LEFT=THREE.MOUSE.PAN;controls.touches.ONE=THREE.TOUCH.PAN;}
-  controls.listenToKeyEvents(canvas);controls.addEventListener('change',invalidate);controls.addEventListener('start',stopHover);
+  controls.listenToKeyEvents(canvas);controls.addEventListener('change',invalidate);
+  controls.addEventListener('start',()=>{stopHover();lastFrameTime=0;});
 }
 function fitOverview(top=false) {
   const box=new THREE.Box3().setFromObject(ground);box.expandByObject(structs);
@@ -735,8 +742,10 @@ canvas.addEventListener('keydown',ev => {
 if(isCompact()) inspector.open=false;
 
 const northArrow=document.getElementById('north-arrow'),northDirection=new THREE.Vector3();
-function renderFrame() {
+function renderFrame(timestamp) {
   renderRequest=0;if(contextLost || document.hidden)return;
+  controls.dampingFactor=dampingAlpha(lastFrameTime?(timestamp-lastFrameTime)/1000:1/60);
+  lastFrameTime=timestamp;
   const changed=controls.update();
   renderer.render(scene,cam);
   northDirection.set(0,1,0).applyQuaternion(cam.quaternion.clone().invert());

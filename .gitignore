@@ -13,3 +13,10 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Viewer development and generated test evidence
+node_modules/
+playwright-report/
+test-results/
+outputs/
+

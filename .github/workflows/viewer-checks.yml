@@ -1,7 +1,7 @@
 name: Viewer checks
 on:
   push:
-    branches: [main, codex/red-hill-viewer-upgrade]
+    branches: [main]
   pull_request:
     branches: [main]
 permissions:

@@ -25,7 +25,7 @@ XMIN, XMAX, YMIN, YMAX = -760.0, 520.0, -175.0, 520.0     # model extents, m
 TERRAIN_STEP = 2.0            # OBJ terrain sampling, m
 STL_STEP     = 2.5            # STL terrain sampling, m
 VIEW_STEP    = 4.0            # web viewer sampling, m
-OUT = '/mnt/user-data/outputs'
+OUT = os.environ.get('RED_HILL_OUTPUT_DIR', 'outputs')
 os.makedirs(OUT, exist_ok=True)
 
 G = json.load(open('grids_meta.json'))
@@ -340,3 +340,4 @@ json.dump({'buildings': buildings, 'piles': piles,
            'extent': [XMIN, XMAX, YMIN, YMAX],
            'z_range_navd88': [round(float(dtm.min()), 2), round(float(dtm.max()), 2)]},
           open('summary.json', 'w'), indent=1)
+

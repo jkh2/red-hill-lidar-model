@@ -1,5 +1,4 @@
-// Replaces the original module from "stockpile list" through its closing script.
-// Requires the original geometry variables and the integration in assemble_upgrade.py.
+// Viewer UI and interaction logic, inlined with the geometry by scripts/build_viewer.py.
 const ul = document.getElementById('piles');
 const inspector = document.getElementById('inspector');
 const selection = document.getElementById('selection');
@@ -201,7 +200,7 @@ function replaceCamera(nextCamera) {
   controls.enableRotate=!cam.isOrthographicCamera;
   if(cam.isOrthographicCamera){controls.mouseButtons.LEFT=THREE.MOUSE.PAN;controls.touches.ONE=THREE.TOUCH.PAN;}
   controls.listenToKeyEvents(canvas);controls.addEventListener('change',invalidate);
-  controls.addEventListener('start',()=>{stopHover();lastFrameTime=0;});
+  controls.addEventListener('start',()=>{stopHover();lastFrameTime=0;controls.dampingFactor=.07;});
 }
 function fitOverview(top=false) {
   const box=new THREE.Box3().setFromObject(ground);box.expandByObject(structs);

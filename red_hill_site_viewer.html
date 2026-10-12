@@ -135,7 +135,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
 }
 @media(max-height:520px) and (max-width:1000px){
   #ident{right:auto;width:calc(100vw - 88px);max-width:420px;padding:8px 12px}
-  #ident .sub,#ident .source-details{display:none}
+  #ident .sub{display:none}
   .badges{margin-top:4px}
   #north,body:has(#inspector[open]) #north{top:8px;bottom:auto}
   #scale,body:has(#inspector[open]) #scale{top:84px;bottom:auto}
@@ -265,7 +265,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
 
 try {
 const [THREE, {OrbitControls}] = await Promise.all([import('three'), import('three/addons/controls/OrbitControls.js')]);
-// Pure helpers; also inlined into the single-file viewer by assemble_upgrade.py.
+// Pure helpers, inlined into the single-file viewer by scripts/build_viewer.py.
 function pointInRing(x, y, ring) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -490,8 +490,7 @@ bind('L-piles', v=>{
   gg.attributes.color.needsUpdate=true; outlines.visible=v;
 });
 
-// Replaces the original module from "stockpile list" through its closing script.
-// Requires the original geometry variables and the integration in assemble_upgrade.py.
+// Viewer UI and interaction logic, inlined with the geometry by scripts/build_viewer.py.
 const ul = document.getElementById('piles');
 const inspector = document.getElementById('inspector');
 const selection = document.getElementById('selection');
@@ -693,7 +692,7 @@ function replaceCamera(nextCamera) {
   controls.enableRotate=!cam.isOrthographicCamera;
   if(cam.isOrthographicCamera){controls.mouseButtons.LEFT=THREE.MOUSE.PAN;controls.touches.ONE=THREE.TOUCH.PAN;}
   controls.listenToKeyEvents(canvas);controls.addEventListener('change',invalidate);
-  controls.addEventListener('start',()=>{stopHover();lastFrameTime=0;});
+  controls.addEventListener('start',()=>{stopHover();lastFrameTime=0;controls.dampingFactor=.07;});
 }
 function fitOverview(top=false) {
   const box=new THREE.Box3().setFromObject(ground);box.expandByObject(structs);

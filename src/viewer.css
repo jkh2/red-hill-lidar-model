@@ -124,7 +124,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
 }
 @media(max-height:520px) and (max-width:1000px){
   #ident{right:auto;width:calc(100vw - 88px);max-width:420px;padding:8px 12px}
-  #ident .sub,#ident .source-details{display:none}
+  #ident .sub{display:none}
   .badges{margin-top:4px}
   #north,body:has(#inspector[open]) #north{top:8px;bottom:auto}
   #scale,body:has(#inspector[open]) #scale{top:84px;bottom:auto}

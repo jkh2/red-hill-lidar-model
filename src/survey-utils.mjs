@@ -1,4 +1,4 @@
-// Pure helpers; also inlined into the single-file viewer by assemble_upgrade.py.
+// Pure helpers, inlined into the single-file viewer by scripts/build_viewer.py.
 export function pointInRing(x, y, ring) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {

@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def csv_export(records, columns, provenance):
     stream = io.StringIO(newline='')
-    writer = csv.writer(stream)
+    writer = csv.writer(stream, lineterminator='\n')
     writer.writerow([name for name, _ in columns] + ['survey_year', 'declared_horizontal_crs', 'limitations'])
     for record in records:
         writer.writerow([record[key] for _, key in columns] + [provenance['survey_year'],

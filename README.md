@@ -1,165 +1,105 @@
 # Red Hill Lava Products — 3D site model
 
-**4000 US Highway 285, Antonito, Colorado 81120**
+**4000 US Highway 285, Antonito, Colorado 81120**  
 Scoria quarry, bagging plant and rail loadout, Conejos County.
 
 **Live viewer:** https://jkh2.github.io/red-hill-lidar-model/
 
-Built from public-domain airborne LiDAR. No Google Maps geometry was used —
-Google's imagery and 3D tiles are licensed and their terms forbid deriving
-models from them. Google Places was used only to confirm the business name,
-street address and gate coordinate.
+The viewer presents a **2020 survey snapshot**, not current stockpile inventory. It is built from public-domain USGS 3DEP LiDAR and OpenStreetMap linework. Google Maps geometry is not used; the original project used Google Places only for site identification.
 
----
+## Viewer
 
-## Files
+- Drag to orbit in **3D overview**; right-drag to pan; scroll to zoom.
+- **Plan** switches to a north-up orthographic view. Drag to pan; its scale bar reflects the actual camera scale. The arrow indicates **grid north**, not magnetic north.
+- Touch: one finger orbits in 3D or pans in Plan; two fingers pan or pinch to zoom.
+- Use layer controls to reveal terrain, stockpile coloring, structures, rail, roads, drainage and the 100 m grid.
+- Select a stockpile button or tap its boundary on the ground to frame it and retain its estimated volume, footprint, crest and coordinates in the inspector.
+- **Measure** accepts two ground points and reports horizontal distance, signed height change, straight 3D distance and grade. Dragging still navigates. Measurements use true coordinates at every vertical exaggeration setting.
+- **Download pile CSV** exports all 30 historical stockpile records with year, estimate basis and CRS caveat.
+- The mobile inspector starts collapsed. Help and navigation controls remain accessible.
+- Keyboard: focus the canvas; arrows pan, +/− zoom, Home returns to overview, T opens Plan and Escape exits Measure or clears selection. Native stockpile buttons respond to Enter or Space.
 
-| File | What it is |
+Default height is **1×**. Exaggeration changes visual height only, including structure height; it does not change inventory estimates or physical measurement values. Source grids are documented as nominal 1 m; the browser terrain samples at **4 m**. Ground cursor elevations and measurements are estimates from that display mesh.
+
+WebGL is required for 3D. If graphics or library initialization fails, the page presents recovery actions and a readable stockpile table. Idle rendering pauses after orbit damping settles.
+
+## Files and deployment
+
+| File or directory | Purpose |
 |---|---|
-| `red_hill_site.obj` + `.mtl` | The main CAD model. Terrain, structures, roads, rail and drainage as five named groups. 226,874 vertices / 449,512 triangles. |
-| `red_hill_terrain_solid.stl` | Watertight terrain solid, 572,504 triangles, 2.5 m sampling. Booleans cleanly; prints without repair. |
-| `red_hill_site_viewer.html` | Self-contained WebGL viewer. Drop it on GitHub Pages as-is. |
-| `stockpiles.csv` | 30 piles with volume, footprint, crest height and UTM position. |
-| `structures.csv` | 29 structures with footprint, height and top elevation. |
-| `build_red_hill_model.py` | The generator. Change the coordinates and it runs anywhere in the country. |
-| `stage1_grids.py` | Reads the raw `.laz` tiles and builds the 1 m grids the generator consumes. Run this first. |
-| `index.html` | Identical to the viewer, named so GitHub Pages serves it at the repo root. |
+| `index.html`, `red_hill_site_viewer.html` | Identical generated, single-file viewers. Deploy either on a static host. GitHub Pages serves `index.html`. |
+| `src/` | Readable HTML, CSS, startup, geometry, interaction and survey-helper sources. Edit these instead of generated HTML. |
+| `data/viewer_payload.json` | Original embedded survey payload, preserved without changing coordinates, heights, volumes or outlines. |
+| `data/provenance.json` | Survey context, original source fingerprint, payload checksum and known limitations. |
+| `scripts/build_viewer.py` | Standard-library-only viewer/CSV builder and generated-file check. |
+| `stockpiles.csv`, `structures.csv` | Generated historical feature records with year and CRS caveat. Local and UTM coordinates are metres. |
+| `red_hill_site.obj`, `red_hill_site.mtl` | Existing CAD model: terrain, structures, roads, rail and drainage. |
+| `build_red_hill_model.py` | Original geometry pipeline; requires external intermediate grids and OSM JSON. |
+| `tests/`, `.github/workflows/viewer-checks.yml` | Survey logic, build integrity and Chromium software-WebGL browser checks. |
 
-The LiDAR tiles themselves (`.laz`, ~108 MB) are deliberately **not** in the
-repo — they are re-downloadable from USGS and `stage1_grids.py` will fetch
-them. See `.gitignore`.
+The deployment retains the existing pinned **Three.js 0.160.0** / OrbitControls CDN imports and Google font styles. No new runtime dependency or backend is required. These are **single-file deployments with network dependencies**, not fully offline applications. Offline use requires vendoring the pinned JavaScript modules and using local/system fonts.
 
----
+### Rebuild the viewer
 
-## Coordinate system
+Requires Python 3.9+ only:
 
-```
-X = UTM 13N easting  − 411048.0
-Y = UTM 13N northing − 4101191.0
-Z = NAVD88 elevation − 2390.0
+```sh
+python scripts/build_viewer.py
+python scripts/build_viewer.py --check
 ```
 
-Units metres, Z up. Horizontal datum NAD83(2011) / UTM zone 13N, **EPSG:26913**.
-Vertical datum NAVD88, Geoid18.
+The builder emits both HTML filenames from one source and regenerates the CSV files. It refuses an unexpected survey checksum. To intentionally adopt new survey data, review and update provenance and date/resolution UI together; do not merely change a checksum to hide an unintended edit.
 
-To georeference in QGIS, Civil3D, Rhino or Blender, translate by
-`(+411048.0, +4101191.0, +2390.0)` and assign EPSG:26913.
+### Verify changes
 
-Model extent: 1,280 m east–west × 695 m north–south.
-Ground elevations 2394.7 – 2413.8 m NAVD88 (7,857 – 7,919 ft).
+Node.js 20+ is needed only for development checks:
 
----
+```sh
+npm ci
+npm run check
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
 
-## Sources
+Browser checks serve the exact pinned Three.js npm package locally, exercise a real WebGL renderer using software graphics, and retain screenshots and traces in GitHub Actions. They cover terrain output, persistent selection, drag rejection, idle frames, plan scale/measurement agreement, exaggeration invariance, keyboard controls, mobile reachability, CSV download and initialization failure. Screenshots use system-font fallback for deterministic CI; production can load Archivo.
 
-**Terrain, structures, stockpiles** — USGS 3DEP LiDAR, project
-`CO_SanLuisJuanMiguel_2020_D20`, flown 2020, 1 m nominal. Raw `.laz` point
-cloud tiles `13S_DB_1101` and `13S_DB_1001`, 3.68 M ground returns and
-265,804 above-ground returns inside the model box. Public domain.
+## Coordinate system and provenance
 
-**Roads, rail, drainage** — OpenStreetMap, © OpenStreetMap contributors,
-ODbL. Attribution required if you publish the viewer.
+```text
+X = UTM zone 13N easting  − 411048.0
+Y = UTM zone 13N northing − 4101191.0
+Z = NAVD88 elevation     − 2390.0
+```
 
-**Site identification** — Google Places (name, address, gate coordinate only).
+Units are metres, Z up. The payload and original OSM transformation declare **EPSG:26913**. Original source documentation calls the LiDAR **NAD83(2011)**, which would correspond to **EPSG:6342** for UTM 13N. This discrepancy is **unresolved**: verify the raw LAZ/grid CRS and transform linework into that confirmed reference before survey integration. Existing numbers have not been reprojected or relabeled by the viewer upgrade. NAVD88 / Geoid18 is retained as originally documented.
 
----
+The original documented extent is 1,280 m east–west × 695 m north–south. The 4 m display grid has 321 × 174 points; its sampled northern row is at local Y 517 m, while the documented model extent reaches Y 520 m. Do not infer measurement precision from the displayed decimal places.
 
-## How it was built
+**Terrain, structures and stockpiles:** USGS 3DEP project `CO_SanLuisJuanMiguel_2020_D20`, flown 2020; original documentation identifies tiles `13S_DB_1101` and `13S_DB_1001`. Public domain.
 
-**Ground surface.** Class-2 (bare earth) returns averaged into a 1 m grid,
-voids filled by nearest neighbour and lightly smoothed. Stockpiles are part
-of the ground surface, so they appear in the terrain mesh directly.
+**Roads, rail and drainage:** © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), ODbL. Keep this attribution when republishing the viewer.
 
-**Structures.** The 1 m bare-earth DEM products USGS distributes have
-buildings stripped out, so those are useless here. Structures come from
-class-1 (unclassified) returns instead: max height per cell above the ground
-surface, blobs under 12 m² discarded, then **stepped extrusion** through
-height tiers at 2/4/6/9/12/16/20/25/31 m. Flat prisms would have averaged the
-22 m screen tower down to about 6 m — the tiers keep it.
+## Historical inventory and limitations
 
-**Stockpiles.** Base pad surface estimated by grey opening with a 60 m disc,
-then smoothed. Anything standing 1 m or more above that base, covering at
-least 60 m² and holding at least 150 m³, is called a pile.
-
-**Linework.** OSM ways reprojected to UTM, clipped to the model box,
-resampled at 6 m and draped on the terrain as ribbons.
-
----
-
-## What the LiDAR found that the address didn't
-
-The Google pin sits on the truck loading yard. The operation actually runs
-about 700 m west of it: a processing and bagging plant on the SLRG
-Alamosa–Antonito rail spur, with a 22 m screen tower and its own yard tracks.
-
-Red Hill's business listing gives `coloradolava.com` as its website, and OSM
-has the access road tagged "Colorado Lava Road" (BLM 5032), which ties the two
-complexes together. Red Hill states it bags and ships by rail from Antonito
-using its own rail cars — which is exactly what the loadout geometry shows.
-
-The model covers both complexes.
-
----
-
-## Inventory as flown
-
-| | |
-|---|---|
+| Metric | Embedded 2020 estimate |
+|---|---:|
 | Stockpiles | 30 |
-| Total volume above pad | **54,208 yd³** (41,445 m³) |
-| Largest single pile | 14,404 yd³ |
-| Structures | 29 objects, 11,085 m² footprint |
-| Tallest structure | 22.0 m |
+| Total above computed pad | 54,208 yd³ / 41,445 m³, rounded |
+| Largest pile | 14,404 yd³, rounded |
+| Structures | 29 |
+| Tallest inferred structure | Approximately 22 m |
 
----
+- **Historical inventory:** piles and operating conditions change. These figures represent the 2020 flight.
+- **Computed pad:** volumes depend on inferred baseline surfaces, not surveyed pad elevations. No numerical accuracy tolerance has been independently validated here.
+- **Simplified massing:** structures use stepped LiDAR extrusions. Open steel frames and conveyors can be incomplete or appear thin. They are not architectural or engineering plans.
+- **Unknown parcels:** the model covers a contiguous industrial corridor. It does not establish property ownership or parcel boundaries.
+- **Measurement meaning:** horizontal distance is XY separation; straight 3D distance includes height change. Neither follows the terrain surface. Grade is undefined for coincident XY points. Use a survey for engineering decisions.
+- **Feature identity:** current pile IDs are volume ranks within one snapshot, not stable identifiers across dates. Outlines were emitted before sorting; the viewer associates the current boundaries explicitly rather than treating outline index as a pile ID. Ambiguous future associations are rejected.
 
-## Limitations — read these before trusting it
+## Raw geometry regeneration: remaining prerequisite
 
-**The flight was 2020.** Stockpile volumes are a snapshot six years old. Piles
-move. Treat these as a baseline, not current inventory.
+The original checkout does **not** include `stage1_grids.py`, raw LAZ tiles, `grids_meta.json`, `dtm.npy`, `struct_h.npy`, `resid.npy` or `osm_geom.json`. Consequently, viewer/CSV rebuilding is reproducible from the committed payload, but raw LiDAR-to-geometry regeneration is not yet reproducible from this checkout alone.
 
-**Parcel boundaries are unknown.** This is a contiguous industrial corridor
-that the evidence links to Red Hill / Colorado Lava. If part of the west
-complex belongs to a neighbouring operator, the model does not know it. That
-takes one drive-by to settle.
+The builder consumes those intermediates. It produces the OBJ/MTL, a 2.5 m terrain-solid STL, CSVs and a viewer payload when the inputs and Python scientific packages are supplied. Outputs now default to `outputs/`; set `RED_HILL_OUTPUT_DIR` to another location if needed. The STL is **not presently committed**, so there is no viewer link claiming it is available.
 
-**Open frames read thin.** Structures are reconstructed from laser returns.
-Conveyor galleries, screen decks and anything with an open steel frame will
-appear narrower and lower than the real thing. Solid-walled buildings are
-close.
-
-**Stepped extrusion is a simplification.** Structure solids are height tiers,
-not surveyed geometry. Good for massing, siting, drainage and visualisation.
-Not a substitute for a plan set.
-
-**Pile volumes depend on the assumed pad.** They are volumes above a computed
-base surface, not above a surveyed pad elevation. Expect a few percent of
-disagreement with a ground survey, more for piles built against a slope.
-
----
-
-## Running it somewhere else
-
-`build_red_hill_model.py` expects the LiDAR tiles already downloaded. To find
-and fetch tiles for any US location:
-
-```python
-import requests
-r = requests.get('https://tnmaccess.nationalmap.gov/api/v1/products', params={
-    'bbox': 'minlon,minlat,maxlon,maxlat',
-    'datasets': 'Lidar Point Cloud (LPC)',
-    'max': 20}).json()
-for item in r['items']:
-    print(item['title'], item['downloadURL'])
-```
-
-Then set `CX`, `CY`, `HALF` in `stage1_grids.py` and `XMIN/XMAX/YMIN/YMAX`
-in the builder to your area.
-
-Coverage is effectively national: at the end of fiscal year 2025, 99% of the
-United States had 3DEP baseline data available or in progress. Alaska is
-IfSAR rather than LiDAR. Acquisition dates range from roughly 2011 to the
-present, so always check the project year before trusting anything that moves.
-
-**Requires:** `laspy[lazrs]`, `numpy`, `scipy`, `scikit-image`, `shapely`,
-`pyproj`, `trimesh`, `rasterio` (optional).
+Restore and validate stage one against the original tile metadata before regenerating the survey. Required packages include NumPy, SciPy, scikit-image, Shapely, pyproj and trimesh; LAZ processing additionally needs laspy/lazrs. Source reconstruction, pad extraction, coordinate verification and dependency pinning for this missing stage remain separate work. Do not reconstruct higher-resolution geometry from the 4 m viewer mesh and present it as the original survey pipeline.

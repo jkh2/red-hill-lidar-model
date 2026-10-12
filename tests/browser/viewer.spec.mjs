@@ -40,7 +40,7 @@ test('renders terrain, preserves selection, and stops rendering at idle',async({
   await page.getByRole('button',{name:/Stockpile 1, estimated/}).click();
   await expect(page.locator('#selection-title')).toHaveText('Stockpile 01');
   const before=await page.locator('#selection-facts').innerText();
-  await page.mouse.move(700,450);await expect(page.locator('#selection-facts')).toHaveText(before);
+  await page.mouse.move(700,450);await expect(page.locator('#selection-facts')).toHaveText(before,{useInnerText:true});
   await screenshot(page,testInfo,'selected-stockpile');
   const canvas=await page.locator('canvas').boundingBox();
   await page.mouse.move(canvas.width*.45,canvas.height*.55);await page.mouse.down();
@@ -68,7 +68,7 @@ test('orthographic scale and ground measurements agree and survive exaggerated h
   const slider=page.getByLabel('Vertical exaggeration',{exact:true});await slider.focus();
   for(let i=0;i<4;i++)await slider.press('ArrowRight');
   await expect(slider).toHaveValue('3');
-  await expect(page.locator('#measurement-facts')).toHaveText(physical);
+  await expect(page.locator('#measurement-facts')).toHaveText(physical,{useInnerText:true});
   await page.getByRole('button',{name:'Clear measurement',exact:true}).click();
   await page.mouse.click(650,500);await page.mouse.click(780,520);
   await expect(page.locator('#measurement-facts dd').nth(0)).toHaveText(horizontal);

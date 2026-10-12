@@ -1,0 +1,67 @@
+<div id="stage" role="region" aria-label="Interactive Red Hill site model"></div>
+<div id="load" role="status" aria-live="polite">Preparing the 2020 LiDAR site model…</div>
+<div class="panel" id="ident">
+  <h1>Red Hill Lava Products</h1>
+  <div class="sub">Antonito, Colorado · scoria quarry, bagging plant and rail loadout</div>
+  <div class="badges"><span class="badge snapshot">2020 survey snapshot</span><span class="badge">4 m viewer mesh</span></div>
+  <details class="source-details"><summary>Sources, coordinates &amp; limitations</summary>
+    <div class="crs">4000 US Highway 285, Antonito, Colorado<br>
+      USGS 3DEP project CO_SanLuisJuanMiguel_2020_D20; 1 m nominal source grid, 4 m viewer sampling.<br>
+      Payload grid: UTM 13N · EPSG:26913<br>Vertical: NAVD88, Geoid18<br>
+      Origin E 411048.0 N 4101191.0 Z 2390.0 m<br>
+      CRS realization needs verification: source documentation says NAD83(2011), while the payload declares EPSG:26913.<br><br>
+      Elevation data: USGS 3DEP, public domain.<br>
+      Roads and rail: © <a href="https://www.openstreetmap.org/copyright" style="color:var(--survey)">OpenStreetMap contributors</a>, ODbL.<br><br>
+      Stockpile volumes are estimates above a computed pad surface, as flown in 2020. Structures are stepped LiDAR massing. Parcel boundaries and current inventory are unverified.
+    </div>
+  </details>
+</div>
+<details class="panel" id="inspector" open>
+  <summary>Site inspector <span class="vxval" id="vx-badge">Height 1.0×</span></summary>
+  <div id="rail">
+    <p class="sec">Layers</p>
+    <label class="tog"><input type="checkbox" id="L-terrain" checked>Ground surface<span class="swatch" style="background:#8A7A66"></span></label>
+    <label class="tog"><input type="checkbox" id="L-piles" checked>Stockpile shading<span class="swatch" style="background:var(--scoria)"></span></label>
+    <label class="tog"><input type="checkbox" id="L-structures" checked>Plant structures<span class="swatch" style="background:#B9C0C4"></span></label>
+    <label class="tog"><input type="checkbox" id="L-rail" checked>Rail<span class="swatch" style="background:#8A6242"></span></label>
+    <label class="tog"><input type="checkbox" id="L-roads" checked>Roads<span class="swatch" style="background:#3A3A3E"></span></label>
+    <label class="tog"><input type="checkbox" id="L-drainage">Drainage<span class="swatch" style="background:#4C7A8C"></span></label>
+    <label class="tog"><input type="checkbox" id="L-grid">100 m grid<span class="swatch" style="background:var(--survey)"></span></label>
+    <p class="sec"><label for="vx">Vertical exaggeration</label> <output class="vxval" id="vxv" for="vx">1.0×</output></p>
+    <input type="range" id="vx" min="1" max="10" step="0.5" value="1" aria-describedby="vx-note">
+    <p class="small-note" id="vx-note">Visual height only. Elevations and stockpile estimates stay at true scale.</p>
+    <div class="actions"><button id="true-scale">Restore 1×</button></div>
+    <section id="selection" aria-labelledby="selection-title" hidden>
+      <h2 id="selection-title">Stockpile</h2><dl class="facts" id="selection-facts"></dl>
+      <p class="small-note">2020 estimate above a computed pad. Not current inventory.</p>
+      <div class="actions"><button id="clear-selection">Clear selection</button></div>
+    </section>
+    <p class="sec">Stockpiles · estimated volume</p>
+    <ul id="piles" aria-label="Stockpiles, largest estimate first"></ul>
+    <div id="piletot"></div>
+    <div class="actions"><button id="export-piles">Download pile CSV</button></div>
+    <section id="measurement" aria-labelledby="measurement-title" hidden>
+      <h2 id="measurement-title">Ground measurement</h2><dl class="facts" id="measurement-facts"></dl>
+      <p class="small-note">2020 ground mesh · 4 m sampling. Straight distances and signed height change, not a terrain-following route or engineering survey.</p>
+      <div class="actions"><button id="clear-measurement">Clear measurement</button></div>
+    </section>
+  </div>
+</details>
+<div class="panel" id="readout" aria-label="Ground cursor coordinates">
+  <div>Model XY <b id="r-xy">—</b></div><div>UTM 13N <b id="r-utm">—</b></div><div>Elevation <b id="r-z">—</b></div>
+  <p class="small-note">Ground mesh estimate · true elevation</p>
+</div>
+<nav class="panel" id="toolbar" aria-label="View controls">
+  <button id="overview" aria-pressed="true">3D overview</button><button id="top-view" aria-pressed="false">Plan</button>
+  <button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button>
+  <button id="measure-toggle" aria-pressed="false" aria-controls="measurement">Measure</button>
+  <button id="help-toggle" aria-expanded="false" aria-controls="help">Help</button>
+</nav>
+<div class="panel" id="measure-prompt" role="status" aria-live="polite" hidden>Tap a starting point on the ground.</div>
+<div class="panel" id="scale" hidden><span id="scale-line"></span><span id="scale-label">100 m</span><span class="small-note">Plan scale</span></div>
+<div class="panel" id="help" hidden>
+  <p>3D: drag to orbit. Right-drag to pan. Plan: drag to pan. Scroll to zoom. Touch: one finger orbits in 3D or pans in Plan; two fingers pan or pinch to zoom.</p>
+  <p class="small-note">Focus the model and use arrows to pan, + / − to zoom, Home for overview, T for Plan, Escape to exit Measure or clear selection. Stockpile buttons work with Enter or Space. Measure: tap two ground points; navigation still works.</p>
+</div>
+<div id="north" aria-label="Grid north orientation"><span id="north-arrow" aria-hidden="true">↑</span><span>Grid N</span></div>
+<div class="sr-only" id="selection-announcement" role="status" aria-live="polite"></div>

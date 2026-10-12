@@ -1,0 +1,15 @@
+{
+  "survey_year": 2020,
+  "source_project": "CO_SanLuisJuanMiguel_2020_D20",
+  "source_grid_nominal_m": 1,
+  "viewer_sampling_m": 4,
+  "declared_payload_horizontal_crs": "EPSG:26913",
+  "source_documented_horizontal_realization": "NAD83(2011), unverified against raw files",
+  "vertical_reference": "NAVD88 / Geoid18, as documented by original project",
+  "volume_basis": "estimated above computed pad; not current inventory",
+  "payload_sha256": "10d1f1c69da651b0c99e72f02546d107dc950ab8c0d08e2d4d4af0581f210196",
+  "original_viewer_git_blob": "8faf689953d89f7780ef8ca464e0f8ab110eafc1",
+  "origin": {"easting_m": 411048.0, "northing_m": 4101191.0, "elevation_m": 2390.0},
+  "attribution": ["USGS 3DEP elevation data, public domain", "OpenStreetMap contributors, ODbL"],
+  "limitations": ["Historical survey", "Inferred stockpile pad", "Stepped structure massing", "Parcel ownership unverified", "CRS realization must be reconciled before survey integration"]
+}

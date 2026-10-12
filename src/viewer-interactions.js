@@ -13,8 +13,10 @@ const measureButton = document.getElementById('measure-toggle');
 const measurePrompt = document.getElementById('measure-prompt');
 const measurementGroup = new THREE.Group(); scene.add(measurementGroup);world.push(measurementGroup);
 measurementGroup.scale.z = +vx.value;
-const measurementMaterial = new THREE.MeshBasicMaterial({color:0x6FD3C7});
-const measurementLineMaterial = new THREE.LineBasicMaterial({color:0x6FD3C7});
+// Survey annotations remain legible where the straight segment passes below
+// intervening terrain. Distances still use the two original ground coordinates.
+const measurementMaterial = new THREE.MeshBasicMaterial({color:0x6FD3C7,depthTest:false,depthWrite:false});
+const measurementLineMaterial = new THREE.LineBasicMaterial({color:0x6FD3C7,depthTest:false,depthWrite:false});
 let measuring=false,measurePoints=[];
 
 D.piles.forEach(p => {
@@ -112,13 +114,13 @@ function addMeasurementPoint(point) {
   if(measurePoints.length===2)clearMeasurement();
   measurePoints.push(point);
   const dot=new THREE.Mesh(new THREE.SphereGeometry(3,12,8),measurementMaterial);
-  dot.position.set(point.x,point.y,point.z+.4);measurementGroup.add(dot);
+  dot.position.set(point.x,point.y,point.z+.4);dot.renderOrder=20;measurementGroup.add(dot);
   if(measurePoints.length===1) {
     measurePrompt.textContent='Tap an ending point. Drag or pinch to navigate.';invalidate();return;
   }
   const [a,b]=measurePoints,distance=surveyDistance(a,b);
   const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(measurePoints.map(p=>new THREE.Vector3(p.x,p.y,p.z+.4))),measurementLineMaterial);
-  measurementGroup.add(line);measurement.hidden=false;
+  line.renderOrder=20;measurementGroup.add(line);measurement.hidden=false;
   const facts=document.getElementById('measurement-facts');facts.replaceChildren();
   [['Horizontal',`${distance.horizontal.toFixed(1)} m`],['Height change',`${distance.dz>=0?'+':''}${distance.dz.toFixed(1)} m`],
     ['Straight 3D distance',`${distance.spatial.toFixed(1)} m`],

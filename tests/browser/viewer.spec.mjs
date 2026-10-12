@@ -75,6 +75,15 @@ test('orthographic scale and ground measurements agree and survive exaggerated h
   await page.getByRole('button',{name:'Clear measurement',exact:true}).click();
   await page.mouse.click(650,500);await page.mouse.click(780,520);
   await expect(page.locator('#measurement-facts dd').nth(0)).toHaveText(horizontal);
+  const scale=await page.locator('#scale').boundingBox(),inspector=await page.locator('#inspector').boundingBox();
+  const readout=await page.locator('#readout').boundingBox();
+  expect(scale.x+scale.width).toBeLessThan(inspector.x);expect(scale.y+scale.height).toBeLessThanOrEqual(readout.y);
+  const image=PNG.sync.read(await page.screenshot());let annotationPixels=0;
+  for(let y=509;y<=511;y++)for(let x=714;x<=716;x++){
+    const i=(y*image.width+x)*4,r=image.data[i],g=image.data[i+1],b=image.data[i+2];
+    if(g>130 && b>100 && g>r*1.2)annotationPixels++;
+  }
+  expect(annotationPixels).toBeGreaterThan(0); // The line stays visible across intervening terrain.
   await screenshot(page,testInfo,'plan-measurement');
   await page.getByRole('button',{name:'Measure',exact:true}).click();
   await page.getByRole('button',{name:'3D overview',exact:true}).click();

@@ -89,7 +89,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
 #measurement{padding:12px;margin:14px 0;border:1px solid var(--rule);border-left:3px solid var(--survey);border-radius:4px}
 #measurement h2{font-size:15px;margin-bottom:8px}
 #measure-prompt{bottom:86px;left:50%;transform:translateX(-50%);z-index:3;font-size:13px;max-width:calc(100vw - 32px)}
-#scale{bottom:100px;right:20px;display:grid;gap:4px;font-size:12px;padding:10px;pointer-events:none}
+#scale{bottom:156px;left:14px;width:max-content;display:grid;gap:4px;font-size:12px;padding:10px;pointer-events:none}
 #scale-line{display:block;height:8px;width:100px;border:solid var(--ink);border-width:0 1px 2px}
 .facts{display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,1.45fr);gap:6px 12px;font-size:13px}
 .facts dd{font-variant-numeric:tabular-nums;color:var(--cinder);text-align:right}
@@ -128,7 +128,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px}
   body:has(#inspector[open]) #north{bottom:calc(46dvh + 176px + env(safe-area-inset-bottom))}
   #readout{display:none}
   #help{bottom:144px}body:has(#inspector[open]) #help{bottom:calc(46dvh + 80px)}
-  #scale{bottom:152px;right:8px;background:rgba(25,20,18,.96);max-width:160px}
+  #scale{bottom:152px;left:auto;right:8px;background:rgba(25,20,18,.96);max-width:160px}
   body:has(#inspector[open]) #scale{bottom:calc(46dvh + 90px)}
   #measure-prompt{bottom:144px;left:8px;transform:none;padding:10px;max-width:calc(100vw - 176px)}
   body:has(#inspector[open]) #measure-prompt{bottom:calc(46dvh + 80px)}
@@ -505,8 +505,10 @@ const measureButton = document.getElementById('measure-toggle');
 const measurePrompt = document.getElementById('measure-prompt');
 const measurementGroup = new THREE.Group(); scene.add(measurementGroup);world.push(measurementGroup);
 measurementGroup.scale.z = +vx.value;
-const measurementMaterial = new THREE.MeshBasicMaterial({color:0x6FD3C7});
-const measurementLineMaterial = new THREE.LineBasicMaterial({color:0x6FD3C7});
+// Survey annotations remain legible where the straight segment passes below
+// intervening terrain. Distances still use the two original ground coordinates.
+const measurementMaterial = new THREE.MeshBasicMaterial({color:0x6FD3C7,depthTest:false,depthWrite:false});
+const measurementLineMaterial = new THREE.LineBasicMaterial({color:0x6FD3C7,depthTest:false,depthWrite:false});
 let measuring=false,measurePoints=[];
 
 D.piles.forEach(p => {
@@ -604,13 +606,13 @@ function addMeasurementPoint(point) {
   if(measurePoints.length===2)clearMeasurement();
   measurePoints.push(point);
   const dot=new THREE.Mesh(new THREE.SphereGeometry(3,12,8),measurementMaterial);
-  dot.position.set(point.x,point.y,point.z+.4);measurementGroup.add(dot);
+  dot.position.set(point.x,point.y,point.z+.4);dot.renderOrder=20;measurementGroup.add(dot);
   if(measurePoints.length===1) {
     measurePrompt.textContent='Tap an ending point. Drag or pinch to navigate.';invalidate();return;
   }
   const [a,b]=measurePoints,distance=surveyDistance(a,b);
   const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(measurePoints.map(p=>new THREE.Vector3(p.x,p.y,p.z+.4))),measurementLineMaterial);
-  measurementGroup.add(line);measurement.hidden=false;
+  line.renderOrder=20;measurementGroup.add(line);measurement.hidden=false;
   const facts=document.getElementById('measurement-facts');facts.replaceChildren();
   [['Horizontal',`${distance.horizontal.toFixed(1)} m`],['Height change',`${distance.dz>=0?'+':''}${distance.dz.toFixed(1)} m`],
     ['Straight 3D distance',`${distance.spatial.toFixed(1)} m`],
